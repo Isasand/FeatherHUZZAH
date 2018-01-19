@@ -21,13 +21,13 @@ void connect(){
   }
 }
 
-void ShowConnection(){
+void HandleConnection(){
  if (WiFi.status()!=WL_CONNECTED){
   if(SERIAL_LOG){
    Serial.print("connecting.."); 
   }
   connect();
-  ShowConnection();
+  HandleConnection();
  }
  else {
   if (SERIAL_LOG){
@@ -42,5 +42,5 @@ void ShowConnection(){
 }
 
 void loop() {
-    ShowConnection();
+    HandleConnection();
 }
