@@ -20,6 +20,7 @@ int value = 0;
 void setup() {
   dht.begin();
   pinMode(BUILTIN_LED, OUTPUT);     // Initialize the BUILTIN_LED pin as an output
+  pinMode(13, OUTPUT);
   Serial.begin(115200);
   setup_wifi();
   client.setServer(mqtt_server, 1883);
@@ -58,9 +59,9 @@ void reconnect() {
   while (!client.connected()) {
     Serial.print("Attempting MQTT connection...");
     // Attempt to connect
-    if (client.connect("ESP8266Client1")) {
+    if (client.connect("ESP8266Client")) {
       Serial.println("connected");
-      client.subscribe("tempTopic");
+      client.subscribe("inTopic");
     } else {
       Serial.print("failed, rc=");
       Serial.print(client.state());
@@ -70,11 +71,40 @@ void reconnect() {
     }
   }
 }
-
+const char* handlePublish(){
+  hum = dht.readHumidity();
+  temp= dht.readTemperature();
+  String message = "[Temp: " +String(temp)+ " Humidity: " + String(hum)+"]";
+  const char *string_complete = message.c_str();
+  if (temp > 25){
+    client.publish("Warnings", string_complete);
+    for(int i= 0; i<3; i++){
+      digitalWrite(13, HIGH);
+      delay(50); 
+      digitalWrite(13, LOW); 
+      delay(50); 
+    }
+  }
+  else{
+      client.publish("outTopic", string_complete);
+  }
+  digitalWrite(BUILTIN_LED, LOW);
+  return string_complete;
+}
 
 void loop() {
   if (!client.connected()) {
     reconnect();
   }
   client.loop();
+  long now = millis();
+  if (now - lastMsg > 2000) {
+    const char* string_complete=handlePublish();
+    lastMsg = now;
+    ++value;
+    snprintf (msg, 75, string_complete, value);
+    Serial.print("Publish message: ");
+    Serial.println(msg);
+  }
+  digitalWrite(BUILTIN_LED, HIGH);
 }

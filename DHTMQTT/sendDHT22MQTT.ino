@@ -7,9 +7,9 @@
 DHT dht(DHTPIN, DHTTYPE);
 float hum;
 float temp;
-const char* ssid = "KindNetwork_2.4GEXT";
-const char* password = "isaaerbast";
-const char* mqtt_server = "192.168.0.105";
+const char* ssid = "";
+const char* password = "";
+const char* mqtt_server = "";
 
 WiFiClient espClient;
 PubSubClient client(espClient);

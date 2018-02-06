@@ -1,12 +1,6 @@
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
-#include <DHT.h>
-#define DHTTYPE DHT22
-#define DHTPIN 2
 
-DHT dht(DHTPIN, DHTTYPE);
-float hum;
-float temp;
 const char* ssid = "";
 const char* password = "";
 const char* mqtt_server = "";
@@ -18,7 +12,6 @@ char msg[50];
 int value = 0;
 
 void setup() {
-  dht.begin();
   pinMode(BUILTIN_LED, OUTPUT);     // Initialize the BUILTIN_LED pin as an output
   Serial.begin(115200);
   setup_wifi();
@@ -44,7 +37,12 @@ void setup_wifi() {
 }
 
 void callback(char* topic, byte* payload, unsigned int length) {
-  Serial.print("Message arrived [");
+  if (strcmp(topic,"Warnings")==0){
+    Serial.print("Warning arrived [");
+  }
+  else{
+    Serial.print("Message arrived [");
+  }
   Serial.print(topic);
   Serial.print("] ");
   for (int i = 0; i < length; i++) {
@@ -58,9 +56,10 @@ void reconnect() {
   while (!client.connected()) {
     Serial.print("Attempting MQTT connection...");
     // Attempt to connect
-    if (client.connect("ESP8266Client1")) {
+    if (client.connect("ESP8266Client2")) {
       Serial.println("connected");
-      client.subscribe("tempTopic");
+      client.subscribe("outTopic");
+      client.subscribe("Warnings");
     } else {
       Serial.print("failed, rc=");
       Serial.print(client.state());
@@ -70,7 +69,6 @@ void reconnect() {
     }
   }
 }
-
 
 void loop() {
   if (!client.connected()) {
